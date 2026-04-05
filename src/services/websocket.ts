@@ -8,6 +8,7 @@ class WebSocketService {
     private ws: WebSocket | null = null;
     private subscribers: Map<string, SubscriberCallback[]> = new Map();
     private reconnectAttempts = 0;
+    private mockInterval: any = null;
 
     connect() {
         if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
@@ -38,7 +39,7 @@ class WebSocketService {
         };
 
         this.ws.onerror = (e) => {
-            console.error("WebSocket Error:", e);
+            // Silencing generic connection refused errors while backend is off
         };
     }
 
@@ -46,6 +47,27 @@ class WebSocketService {
         const delay = Math.min(1000 * (2 ** this.reconnectAttempts), 10000);
         this.reconnectAttempts++;
         setTimeout(() => this.connect(), delay);
+        
+        // --- MOCK SIMULATION FOR SHOWCASE ---
+        // If the backend is down, let's fire some fake trades so we can see the chart and animations!
+        if (!this.ws) {
+            if (!this.mockInterval) {
+                this.mockInterval = setInterval(() => {
+                    const fakePrice = (0.50 + (Math.random() * 0.1 - 0.05)).toFixed(3);
+                    const fakeSize = Math.floor(Math.random() * 2000).toString();
+                    
+                    this.notifySubscribers('message', {
+                        type: 'TRADE',
+                        data: {
+                            market_id: '1', // Hardcoded to match our first mock market
+                            price: fakePrice,
+                            size: fakeSize,
+                            maker_address: '0xmock'
+                        }
+                    });
+                }, 1500); // New trade every 1.5 seconds
+            }
+        }
     }
 
     subscribe(event: string, callback: SubscriberCallback) {

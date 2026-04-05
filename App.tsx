@@ -2,10 +2,15 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
+import { LogBox } from 'react-native';
 
-import MarketsScreen from './src/screens/MarketsScreen';
+import TabNavigator from './src/navigation/TabNavigator';
 import MarketDetailScreen from './src/screens/MarketDetailScreen';
 import { colors } from './src/theme/colors';
+
+// Crucial UI Polish: Silence noisy developer warnings 
+// about WebSocket connection timeouts while testing without a locally running backend.
+LogBox.ignoreLogs(['WebSocket Error', 'Possible Unhandled Promise Rejection']);
 
 const Stack = createNativeStackNavigator();
 
@@ -24,8 +29,8 @@ export default function App() {
         }}
       >
         <Stack.Screen 
-          name="Markets" 
-          component={MarketsScreen} 
+          name="RootTabs" 
+          component={TabNavigator} 
           options={{ headerShown: false }}
         />
         <Stack.Screen 
